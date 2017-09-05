@@ -27,26 +27,52 @@ public class CalculateSales {
 		BufferedReader br_e = null;
 		FileWriter fw_b = null;
 		FileWriter fw_c = null;
+		Pattern p = Pattern.compile("^[0-9]*$");
+		Pattern p2 = Pattern.compile("^[0-9a-zA-Z]*$");
 
 		//支店定義ファイルの読み込み
 		try{
+			if(args[0]==null){
+				System.out.println("予期せぬエラーが発生しました");		//コマンド引数なし
+				return;
+			}
+			if(args.length!=1){
+				System.out.println("予期せぬエラーが発生しました");		//コマンド引数複数
+				return;
+			}
 			File file = new File(args[0]+ fs+"branch.lst");
 			if(file.exists()==false){
 				System.out.println("支店定義ファイルが存在しません");
+				return;
+			}
+			if(file.canRead()==false){
+				System.out.println("予期せぬエラーが発生しました");		//読み込めないファイル
 				return;
 			}
 			br_b = new BufferedReader(new FileReader(file));
 			line = br_b.readLine();
 			while (line != null) {
 				if(line.indexOf(",")==-1){
-					System.out.println("支店定義ファイルのフォーマットが不正です");
+					System.out.println("支店定義ファイルのフォーマットが不正です");		//,なし
 					return;
 				}
-				else{
-					branchName.put(line.substring(0,line.indexOf(",")),line.substring(line.indexOf(",")+1));
-					branchValue.put(line.substring(0,line.indexOf(",")),(long)0);
-					line = br_b.readLine();
+				String[] strings = line.split(",",0);
+				if(strings.length>2){
+					System.out.println("支店定義ファイルのフォーマットが不正です");		//,２個以上
+					return;
 				}
+				branchName.put(line.substring(0,line.indexOf(",")),line.substring(line.indexOf(",")+1));
+				Matcher m = p.matcher(line.substring(0,line.indexOf(",")));
+				if(m.find()==false){
+					System.out.println("支店定義ファイルのフォーマットが不正です");		//支店コードに数値以外
+					return;
+				}
+				if(line.substring(0,line.indexOf(",")).length()!=3){
+					System.out.println("支店定義ファイルのフォーマットが不正です");		//支店コードが３桁以外
+					return;
+				}
+				branchValue.put(line.substring(0,line.indexOf(",")),(long)0);
+				line = br_b.readLine();
 			}
 		}
 		
@@ -73,18 +99,35 @@ public class CalculateSales {
 				System.out.println("商品定義ファイルが存在しません");
 				return;
 			}
+			if(file.canRead()==false){
+				System.out.println("予期せぬエラーが発生しました");		//読み込めないファイル
+				return;
+			}
 			br_c = new BufferedReader(new FileReader(file));
 			line = br_c.readLine();
 			while (line != null) {
 				if(line.indexOf(",")==-1){
-					System.out.println("商品定義ファイルのフォーマットが不正です");
+					System.out.println("商品定義ファイルのフォーマットが不正です");		//,なし
 					return;
 				}
-				else{
-					commodityName.put(line.substring(0,line.indexOf(",")),line.substring(line.indexOf(",")+1));
-					commodityValue.put(line.substring(0,line.indexOf(",")),(long)0);
-					line = br_c.readLine();
+				String[] strings = line.split(",",0);
+				if(strings.length>2){
+					System.out.println("商品定義ファイルのフォーマットが不正です");		//,２個以上
+					return;
 				}
+				commodityName.put(line.substring(0,line.indexOf(",")),line.substring(line.indexOf(",")+1));
+				Matcher m = p2.matcher(line.substring(0,line.indexOf(",")));
+				if(m.find()==false){
+					System.out.println("商品定義ファイルのフォーマットが不正です");		//商品コードに数値と英以外
+					return;
+				}
+				if(line.substring(0,line.indexOf(",")).length()!=8){
+					System.out.println("商品定義ファイルのフォーマットが不正です");		//商品コードが８桁以外
+					return;
+				}
+				commodityValue.put(line.substring(0,line.indexOf(",")),(long)0);
+				line = br_c.readLine();
+
 			}
 		}
 		catch(IOException e){
@@ -115,11 +158,15 @@ public class CalculateSales {
 			}
 		};
 		File[] files = new File(args[0]).listFiles(filter);
-		
 		//売り上げファイルの名前の取得
 		String[] earningsName = new String[files.length];
 		for(int i=0; i<files.length; i++){
-			earningsName[i] = files[i].getName();
+			if(files[i].isDirectory()==false){
+				earningsName[i] = files[i].getName();
+			}
+			else{
+				earningsName[i] = "111";
+			}
 		}
 		
 		//8桁の確認
@@ -148,34 +195,37 @@ public class CalculateSales {
 				file[i] = new File(args[0]+fs+earningsName2.get(i));
 				br_e = new BufferedReader(new FileReader(file[i]));
 				String branchKey = br_e.readLine();
+				String commodityKey = br_e.readLine();
+				String value = br_e.readLine();
+				String st =  br_e.readLine();
 				if(branchKey == null){
-					System.out.println(earningsName2.get(i)+"のフォーマットが不正です");
+					System.out.println(earningsName2.get(i)+"のフォーマットが不正です");		//1行目なし
 					return;
+				}
+				if(commodityKey == null){
+					System.out.println(earningsName2.get(i)+"のフォーマットが不正です");		//2行目なし
+					return;
+				}
+				if(value == null){
+					System.out.println(earningsName2.get(i)+"のフォーマットが不正です");		//3行目なし
+					return;
+				}
+				if(st != null){
+					System.out.println(earningsName2.get(i)+"のフォーマットが不正です");		//4行目あり
 				}
 				if(branchName.get(branchKey)==null){
-					System.out.println(earningsName2.get(i)+"の支店コードが不正です");
-					return;
-				}
-				String commodityKey = br_e.readLine();
-				if(commodityKey == null){
-					System.out.println(earningsName2.get(i)+"のフォーマットが不正です");
+					System.out.println(earningsName2.get(i)+"の支店コードが不正です");		//対応する支店なし
 					return;
 				}
 				if(commodityName.get(commodityKey)==null){
-					System.out.println(earningsName2.get(i)+"の商品コードが不正です");
+					System.out.println(earningsName2.get(i)+"の商品コードが不正です");		//対応する商品なし
 					return;
 				}
 				
 				//売り上げ合計の計算
-				String value = br_e.readLine();
-				if(value == null){
-					System.out.println(earningsName2.get(i)+"のフォーマットが不正です");
-					return;
-				}
-				Pattern p = Pattern.compile("^[0-9]*$");	//3行目が数字のみかの確認
 				Matcher m = p.matcher(value);
 				if(m.find()==false){
-					System.out.println("予期せぬエラーが発生しました");
+					System.out.println("予期せぬエラーが発生しました");		//3行目が数値以外
 					return;
 				}
 				long bValue = branchValue.get(branchKey)+Integer.parseInt(value);
@@ -189,11 +239,7 @@ public class CalculateSales {
 					return;
 				}
 				
-				//４行目の確認
-				String st =  br_e.readLine();
-				if(st != null){
-					System.out.println(earningsName2.get(i)+"のフォーマットが不正です");
-				}
+				
 			}
 		}
 		catch(IOException e){
