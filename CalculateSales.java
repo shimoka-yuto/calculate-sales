@@ -9,14 +9,17 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 
 public class CalculateSales {
 	public static void main(String[] args){
 		String line = null;
 		HashMap<String,String> branchName = new HashMap<String,String>();
-		HashMap<String,Integer> branchValue = new HashMap<String,Integer>();
+		HashMap<String,Long> branchValue = new HashMap<String,Long>();
 		HashMap<String,String> commodityName = new HashMap<String,String>();
-		HashMap<String,Integer> commodityValue = new HashMap<String,Integer>();
+		HashMap<String,Long> commodityValue = new HashMap<String,Long>();
 		String sep = System.getProperty("line.separator");
 		String fs = System.getProperty( "file.separator" );
 		BufferedReader br_b = null;
@@ -29,34 +32,36 @@ public class CalculateSales {
 		try{
 			File file = new File(args[0]+ fs+"branch.lst");
 			if(file.exists()==false){
-				System.out.println("支店定義ファイルが存在しません。");
+				System.out.println("支店定義ファイルが存在しません");
 				return;
 			}
 			br_b = new BufferedReader(new FileReader(file));
 			line = br_b.readLine();
 			while (line != null) {
 				if(line.indexOf(",")==-1){
-					System.out.println("支店定義ファイルのフォーマットが不正です。");
+					System.out.println("支店定義ファイルのフォーマットが不正です");
 					return;
 				}
 				else{
 					branchName.put(line.substring(0,line.indexOf(",")),line.substring(line.indexOf(",")+1));
-					branchValue.put(line.substring(0,line.indexOf(",")),0);
+					branchValue.put(line.substring(0,line.indexOf(",")),(long)0);
 					line = br_b.readLine();
 				}
 			}
 		}
 		
 		catch(IOException e){
-			System.out.println("予期せぬエラーが発生しました。");
+			System.out.println("予期せぬエラーが発生しました");
 			return;
 		}
 		finally {
 			try {
-				br_b.close();
+				if(br_b != null){
+					br_b.close();
+				}
 			}
 			catch (IOException e) {
-				System.out.println("予期せぬエラーが発生しました。");
+				System.out.println("予期せぬエラーが発生しました");
 				return;
 			}
 		}
@@ -65,33 +70,35 @@ public class CalculateSales {
 		try{
 			File file = new File(args[0]+fs+"commodity.lst");
 			if(file.exists()==false){
-				System.out.println("商品定義ファイルが存在しません。");
+				System.out.println("商品定義ファイルが存在しません");
 				return;
 			}
 			br_c = new BufferedReader(new FileReader(file));
 			line = br_c.readLine();
 			while (line != null) {
 				if(line.indexOf(",")==-1){
-					System.out.println("商品定義ファイルのフォーマットが不正です。");
+					System.out.println("商品定義ファイルのフォーマットが不正です");
 					return;
 				}
 				else{
 					commodityName.put(line.substring(0,line.indexOf(",")),line.substring(line.indexOf(",")+1));
-					commodityValue.put(line.substring(0,line.indexOf(",")),0);
+					commodityValue.put(line.substring(0,line.indexOf(",")),(long)0);
 					line = br_c.readLine();
 				}
 			}
 		}
 		catch(IOException e){
-			System.out.println("予期せぬエラーが発生しました。");
+			System.out.println("予期せぬエラーが発生しました");
 			return;
 		}
 		finally {
 			try {
-				br_c.close();
+				if(br_c != null){
+					br_c.close();
+				}
 			}
 			catch (IOException e) {
-				System.out.println("予期せぬエラーが発生しました。");
+				System.out.println("予期せぬエラーが発生しました");
 				return;
 			}
 		}
@@ -141,46 +148,66 @@ public class CalculateSales {
 				file[i] = new File(args[0]+fs+earningsName2.get(i));
 				br_e = new BufferedReader(new FileReader(file[i]));
 				String branchKey = br_e.readLine();
+				if(branchKey == null){
+					System.out.println(earningsName2.get(i)+"のフォーマットが不正です");
+					return;
+				}
 				if(branchName.get(branchKey)==null){
-					System.out.println(branchKey+"の支店コードが不正です。");
+					System.out.println(earningsName2.get(i)+"の支店コードが不正です");
 					return;
 				}
 				String commodityKey = br_e.readLine();
+				if(commodityKey == null){
+					System.out.println(earningsName2.get(i)+"のフォーマットが不正です");
+					return;
+				}
 				if(commodityName.get(commodityKey)==null){
-					System.out.println(commodityKey+"の商品コードが不正です。");
+					System.out.println(earningsName2.get(i)+"の商品コードが不正です");
 					return;
 				}
 				
 				//売り上げ合計の計算
 				String value = br_e.readLine();
-				int bValue = branchValue.get(branchKey)+Integer.parseInt(value);
-				int cValue =commodityValue.get(commodityKey)+Integer.parseInt(value);
+				if(value == null){
+					System.out.println(earningsName2.get(i)+"のフォーマットが不正です");
+					return;
+				}
+				Pattern p = Pattern.compile("^[0-9]*$");	//3行目が数字のみかの確認
+				Matcher m = p.matcher(value);
+				if(m.find()==false){
+					System.out.println("予期せぬエラーが発生しました");
+					return;
+				}
+				long bValue = branchValue.get(branchKey)+Integer.parseInt(value);
+				long cValue =commodityValue.get(commodityKey)+Integer.parseInt(value);
 				branchValue.replace(branchKey,bValue);
 				commodityValue.replace(commodityKey,cValue);
 				
 				//10桁の確認
 				if(String.valueOf(bValue).length()>10 || String.valueOf(cValue).length()>10){
-					System.out.println("合計金額が１０桁を超えました。");
+					System.out.println("合計金額が10桁を超えました");
 					return;
 				}
 				
 				//４行目の確認
 				String st =  br_e.readLine();
 				if(st != null){
-					System.out.println(earningsName2.get(i)+"のフォーマットが不正です。");
+					System.out.println(earningsName2.get(i)+"のフォーマットが不正です");
 				}
 			}
 		}
 		catch(IOException e){
-			System.out.println("予期せぬエラーが発生しました。");
+			System.out.println("予期せぬエラーが発生しました");
 			return;
 		}
 		finally {
 			try {
-				br_e.close();
+				if(br_e != null){
+					br_e.close();
+				}
 			}
 			catch (IOException e) {
-				System.out.println("予期せぬエラーが発生しました。");
+				System.out.println("予期せぬエラーが発生しました");
 				return;
 			}
 		}
@@ -199,15 +226,17 @@ public class CalculateSales {
 			}
 		}
 		catch(IOException e){
-			System.out.println("予期せぬエラーが発生しました。");
+			System.out.println("予期せぬエラーが発生しました");
 			return;
 		}
 		finally {
 			try {
-				fw_b.close();
+				if(fw_b != null){
+					fw_b.close();
+				}
 			}
 			catch (IOException e) {
-				System.out.println("予期せぬエラーが発生しました。");
+				System.out.println("予期せぬエラーが発生しました");
 				return;
 			}
 		}
@@ -227,15 +256,17 @@ public class CalculateSales {
 			}
 		}
 		catch(IOException e){
-			System.out.println("予期せぬエラーが発生しました。");
+			System.out.println("予期せぬエラーが発生しました");
 			return;
 		}
 		finally {
 			try {
-				fw_c.close();
+				if(fw_c != null){
+					fw_c.close();
+				}
 			}
 			catch (IOException e) {
-				System.out.println("予期せぬエラーが発生しました。");
+				System.out.println("予期せぬエラーが発生しました");
 				return;
 			}
 		}
