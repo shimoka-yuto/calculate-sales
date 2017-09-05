@@ -228,8 +228,8 @@ public class CalculateSales {
 					System.out.println("予期せぬエラーが発生しました");		//3行目が数値以外
 					return;
 				}
-				long bValue = branchValue.get(branchKey)+Integer.parseInt(value);
-				long cValue =commodityValue.get(commodityKey)+Integer.parseInt(value);
+				long bValue = branchValue.get(branchKey)+(long)Integer.parseInt(value);
+				long cValue =commodityValue.get(commodityKey)+(long)Integer.parseInt(value);
 				branchValue.replace(branchKey,bValue);
 				commodityValue.replace(commodityKey,cValue);
 				
