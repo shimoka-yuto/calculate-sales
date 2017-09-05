@@ -22,6 +22,8 @@ public class CalculateSales {
 		BufferedReader br_b = null;
 		BufferedReader br_c = null;
 		BufferedReader br_e = null;
+		FileWriter fw_b = null;
+		FileWriter fw_c = null;
 
 		//支店定義ファイルの読み込み
 		try{
@@ -140,12 +142,12 @@ public class CalculateSales {
 				br_e = new BufferedReader(new FileReader(file[i]));
 				String branchKey = br_e.readLine();
 				if(branchName.get(branchKey)==null){
-					System.out.println("<"+branchKey+">の支店コードが不正です。");
+					System.out.println(branchKey+"の支店コードが不正です。");
 					return;
 				}
 				String commodityKey = br_e.readLine();
 				if(commodityName.get(commodityKey)==null){
-					System.out.println("<"+commodityKey+">の商品コードが不正です。");
+					System.out.println(commodityKey+"の商品コードが不正です。");
 					return;
 				}
 				
@@ -165,7 +167,7 @@ public class CalculateSales {
 				//４行目の確認
 				String st =  br_e.readLine();
 				if(st != null){
-					System.out.println("<"+earningsName2.get(i)+">のフォーマットが不正です。");
+					System.out.println(earningsName2.get(i)+"のフォーマットが不正です。");
 				}
 			}
 		}
@@ -189,17 +191,25 @@ public class CalculateSales {
 			branchOut.createNewFile();
 
 			//書き込み
-			FileWriter filewriter = new FileWriter(branchOut);
+			fw_b = new FileWriter(branchOut);
 			ArrayList<String> list = new ArrayList<String>();
 			branchValue.entrySet().stream().sorted(java.util.Collections.reverseOrder(java.util.Map.Entry.comparingByValue())).forEach(s -> list.add(s.getKey()+","+branchName.get(s.getKey())+","+branchValue.get(s.getKey())));
 			for(int i=0; i<list.size(); i++){
-				filewriter.write(list.get(i)+sep);
+				fw_b.write(list.get(i)+sep);
 			}
-			filewriter.close();
 		}
 		catch(IOException e){
 			System.out.println("予期せぬエラーが発生しました。");
 			return;
+		}
+		finally {
+			try {
+				fw_b.close();
+			}
+			catch (IOException e) {
+				System.out.println("予期せぬエラーが発生しました。");
+				return;
+			}
 		}
 
 
@@ -209,17 +219,25 @@ public class CalculateSales {
 			commodityOut.createNewFile();
 
 			//書き込み
-			FileWriter filewriter = new FileWriter(commodityOut);
+			fw_c = new FileWriter(commodityOut);
 			ArrayList<String> list = new ArrayList<String>();
 			commodityValue.entrySet().stream().sorted(java.util.Collections.reverseOrder(java.util.Map.Entry.comparingByValue())).forEach(s -> list.add(s.getKey()+","+commodityName.get(s.getKey())+","+commodityValue.get(s.getKey())));
 			for(int i=0; i<list.size(); i++){
-				filewriter.write(list.get(i)+sep);
+				fw_c.write(list.get(i)+sep);
 			}
-			filewriter.close();
 		}
 		catch(IOException e){
 			System.out.println("予期せぬエラーが発生しました。");
 			return;
+		}
+		finally {
+			try {
+				fw_c.close();
+			}
+			catch (IOException e) {
+				System.out.println("予期せぬエラーが発生しました。");
+				return;
+			}
 		}
 
 
