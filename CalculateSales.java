@@ -32,12 +32,8 @@ public class CalculateSales {
 
 		//支店定義ファイルの読み込み
 		try{
-			if(args[0]==null){
-				System.out.println("予期せぬエラーが発生しました");		//コマンド引数なし
-				return;
-			}
 			if(args.length!=1){
-				System.out.println("予期せぬエラーが発生しました");		//コマンド引数複数
+				System.out.println("予期せぬエラーが発生しました");		//コマンド引数複数orなし
 				return;
 			}
 			File file = new File(args[0]+ fs+"branch.lst");
@@ -228,8 +224,8 @@ public class CalculateSales {
 					System.out.println("予期せぬエラーが発生しました");		//3行目が数値以外
 					return;
 				}
-				long bValue = branchValue.get(branchKey)+(long)Integer.parseInt(value);
-				long cValue =commodityValue.get(commodityKey)+(long)Integer.parseInt(value);
+				long bValue = branchValue.get(branchKey)+Long.parseLong(value);
+				long cValue =commodityValue.get(commodityKey)+Long.parseLong(value);
 				branchValue.replace(branchKey,bValue);
 				commodityValue.replace(commodityKey,cValue);
 				
