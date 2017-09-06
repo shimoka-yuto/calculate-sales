@@ -30,10 +30,10 @@ public class CalculateSales {
 		}
 			
 		//支店定義ファイルの読み込み
-		fileRead(args[0], "branch.lst");
+		fileRead(args[0], "branch.lst", "支店", "^[0-9]*$", 3, branchName, branchValue);
 
 		//商品定義ファイルの読み込み
-		fileRead(args[0], "commodity.lst");
+		fileRead(args[0], "commodity.lst","商品", "^[0-9a-zA-Z]*$", 8, commodityName, commodityValue);
 			
 		//売り上げファイルの抽出
 		FilenameFilter filter = new FilenameFilter() {		//ファイルネームフィルター
@@ -145,31 +145,17 @@ public class CalculateSales {
 		}
 
 		//支店別集計ファイルの生成
-		fileWrite(args[0], "branch.out");
+		fileWrite(args[0], "branch.out", branchName, branchValue);
 
 		//商品別集計ファイルの生成
-		fileWrite(args[0], "commodity.out");
+		fileWrite(args[0], "commodity.out", commodityName, commodityValue);
 
 	}
 	
 	
 	//ファイル読み込みのメソッド
-	public static void fileRead(String arg, String str){
+	public static void fileRead(String arg, String str, String name, String patturn, int codeLength, HashMap<String, String> nameMap, HashMap<String, Long> valueMap){
 		BufferedReader br = null;
-		String name= null;
-		String patturn = null;
-		int codeLength = 0;
-		
-		if(str.equals("branch.lst")){
-			name = "支店";
-			patturn = "^[0-9]*$";
-			codeLength = 3;
-		}
-		else if(str.equals("commodity.lst")){
-			name = "商品";
-			patturn = "^[0-9a-zA-Z]*$";
-			codeLength = 8;
-		}
 		
 		try{
 			File file = new File(arg+ fs + str);
@@ -211,15 +197,9 @@ public class CalculateSales {
 				}
 				
 				//マップに追加
-				if(str.equals("branch.lst")){
-					branchName.put(strings[0],strings[1]);
-					branchValue.put(strings[0],(long)0);
-				}
-				else if(str.equals("commodity.lst")){
-					commodityName.put(strings[0],strings[1]);
-					commodityValue.put(strings[0],(long)0);
-				}
-
+				nameMap.put(strings[0],strings[1]);
+				valueMap.put(strings[0],(long)0);
+				
 				line = br.readLine();
 			}
 		}	
@@ -242,7 +222,7 @@ public class CalculateSales {
 	
 	
 	//ファイル生成・書き込みのメソッド
-	public static void fileWrite(String arg, String str){
+	public static void fileWrite(String arg, String str, HashMap<String, String> nameMap, HashMap<String, Long> valueMap){
 		FileWriter fw = null;
 
 		try{
@@ -253,7 +233,7 @@ public class CalculateSales {
 			//書き込み
 			fw = new FileWriter(file);
 			ArrayList<String> list = new ArrayList<String>();
-			branchValue.entrySet().stream().sorted(java.util.Collections.reverseOrder(java.util.Map.Entry.comparingByValue())).forEach(s -> list.add(s.getKey()+","+branchName.get(s.getKey())+","+branchValue.get(s.getKey())));
+			valueMap.entrySet().stream().sorted(java.util.Collections.reverseOrder(java.util.Map.Entry.comparingByValue())).forEach(s -> list.add(s.getKey()+","+nameMap.get(s.getKey())+","+valueMap.get(s.getKey())));
 			for(int i=0; i<list.size(); i++){
 				fw.write(list.get(i)+sep);
 			}
