@@ -160,9 +160,6 @@ public class CalculateSales {
 			if(files[i].isDirectory()==false){
 				earningsName[i] = files[i].getName();
 			}
-			else{
-				earningsName[i] = "111";
-			}
 		}
 		
 		//8桁の確認
@@ -179,7 +176,11 @@ public class CalculateSales {
 			num[i] = Integer.parseInt(earningsName2.get(i).substring(0,8));
 		}
 		Arrays.sort(num);
-		if(num[num.length-1]-num[0]+1!=num.length){
+		if(num.length==0){
+			System.out.println("売上ファイル名が連番になっていません");
+			return;
+		}
+		else if(num[num.length-1]-num[0]+1!=num.length){
 			System.out.println("売上ファイル名が連番になっていません");
 			return;
 		}
