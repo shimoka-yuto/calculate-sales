@@ -22,6 +22,7 @@ public class CalculateSales {
 	
 	public static void main(String[] args){	
 		BufferedReader br = null;
+		boolean boo = true;
 		
 		//コマンド引数の確認
 		if(args.length!=1){
@@ -30,11 +31,17 @@ public class CalculateSales {
 		}
 			
 		//支店定義ファイルの読み込み
-		fileRead(args[0], "branch.lst", "支店", "^[0-9]*$", 3, branchName, branchValue);
+		boo = fileRead(args[0], "branch.lst", "支店", "^[0-9]*$", 3, branchName, branchValue);
+		if(boo == false){
+			return;
+		}
 
 		//商品定義ファイルの読み込み
-		fileRead(args[0], "commodity.lst","商品", "^[0-9a-zA-Z]*$", 8, commodityName, commodityValue);
-			
+		boo = fileRead(args[0], "commodity.lst","商品", "^[0-9a-zA-Z]*$", 8, commodityName, commodityValue);
+		if(boo == false){
+			return;
+		}
+		
 		//売り上げファイルの抽出
 		FilenameFilter filter = new FilenameFilter() {		//ファイルネームフィルター
 			public boolean accept(File file, String str){
@@ -145,16 +152,21 @@ public class CalculateSales {
 		}
 
 		//支店別集計ファイルの生成
-		fileWrite(args[0], "branch.out", branchName, branchValue);
+		boo = fileWrite(args[0], "branch.out", branchName, branchValue);
+		if(boo == false){
+			return;
+		}
 
 		//商品別集計ファイルの生成
-		fileWrite(args[0], "commodity.out", commodityName, commodityValue);
-
+		boo = fileWrite(args[0], "commodity.out", commodityName, commodityValue);
+		if(boo == false){
+			return;
+		}
 	}
 	
 	
 	//ファイル読み込みのメソッド
-	public static void fileRead(String arg, String str, String name, String patturn, int codeLength, HashMap<String, String> nameMap, HashMap<String, Long> valueMap){
+	public static boolean fileRead(String arg, String str, String name, String patturn, int codeLength, HashMap<String, String> nameMap, HashMap<String, Long> valueMap){
 		BufferedReader br = null;
 		
 		try{
@@ -163,13 +175,13 @@ public class CalculateSales {
 			//ファイル存在の確認
 			if(file.exists()==false){
 				System.out.println(name+"定義ファイルが存在しません");		//ファイルが存在しない
-				return;
+				return false;
 			}
 			
 			//ファイルロックの確認
 			if(file.canRead()==false){
 				System.out.println("予期せぬエラーが発生しました");		//読み込めないファイル
-				return;
+				return false;
 			}
 			
 			//ファイル読み込み
@@ -180,20 +192,20 @@ public class CalculateSales {
 				//ファイルフォーマットの確認
 				if(line.indexOf(",")==-1){
 					System.out.println(name+"定義ファイルのフォーマットが不正です");		//,なし
-					return;
+					return false;
 				}
 				String[] strings = line.split(",",0);
 				if(strings.length>2){
 					System.out.println(name+"定義ファイルのフォーマットが不正です");		//,2個以上
-					return;
+					return false;
 				}
 				if(strings[0].matches(patturn)==false){
 					System.out.println(name+"定義ファイルのフォーマットが不正です");		//コードに数値(とアルファベット)以外
-					return;
+					return false;
 				}
 				if(strings[0].length()!=codeLength){
 					System.out.println(name+"定義ファイルのフォーマットが不正です");		//コードの桁数が違う
-					return;
+					return false;
 				}
 				
 				//マップに追加
@@ -205,7 +217,7 @@ public class CalculateSales {
 		}	
 		catch(IOException e){
 			System.out.println("予期せぬエラーが発生しました");
-			return;
+			return false;
 		}
 		finally {
 			try {
@@ -215,14 +227,16 @@ public class CalculateSales {
 			}
 			catch (IOException e) {
 				System.out.println("予期せぬエラーが発生しました");
-				return;
+				return false;
 			}
 		}
+		
+		return true;
 	}
 	
 	
 	//ファイル生成・書き込みのメソッド
-	public static void fileWrite(String arg, String str, HashMap<String, String> nameMap, HashMap<String, Long> valueMap){
+	public static boolean fileWrite(String arg, String str, HashMap<String, String> nameMap, HashMap<String, Long> valueMap){
 		FileWriter fw = null;
 
 		try{
@@ -240,7 +254,7 @@ public class CalculateSales {
 		}
 		catch(IOException e){
 			System.out.println("予期せぬエラーが発生しました");
-			return;
+			return false;
 		}
 		finally {
 			try {
@@ -250,9 +264,11 @@ public class CalculateSales {
 			}
 			catch (IOException e) {
 				System.out.println("予期せぬエラーが発生しました");
-				return;
+				return false;
 			}
 		}
+		
+		return true;
 
 	}
 }
