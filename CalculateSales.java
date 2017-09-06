@@ -165,7 +165,7 @@ public class CalculateSales {
 		//8桁の確認
 		ArrayList<String> earningsName2  = new ArrayList<String>();
 		for(int i=0; i<earningsName.length; i++){
-			if(earningsName[i].length()==12){
+			if(earningsName[i]!=null && earningsName[i].length()==12){
 				earningsName2.add(earningsName[i]);
 			}
 		}
